@@ -23,7 +23,6 @@ public class DiscreteRangeSlideBar extends View {
     private static final String TAG = DiscreteRangeSlideBar.class.getSimpleName();
 
     private static final int DEFAULT_BAR_HEIGHT = 10;
-
     private static final int DEFAULT_PAINT_STROKE_WIDTH = 0;
 
     private static final int DEFAULT_FILLED_SLOT_RADIUS_IN_DP = 30;
@@ -46,10 +45,11 @@ public class DiscreteRangeSlideBar extends View {
     private static final int DEFAULT_RANGE_COUNT = 5;
     private static final int DEFAULT_HEIGHT_IN_DP = 50;
 
+    private static final int DEFAULT_MULTIPLIER = 10;
+    private static final int DEFAULT_STARTINDEX = 1;
+
+
     protected Paint paint;
-    //    protected Paint ripplePaint;
-//    protected float radius;
-//    protected float emptySlotRadius;
     private int currentIndex;
     private float currentSlidingX;
     private float currentSlidingY;
@@ -74,17 +74,13 @@ public class DiscreteRangeSlideBar extends View {
     private float selectedTextSize = DEFAULT_SELECTED_TEXTSIZE_IN_DP;
     private boolean selectedShowShadow = DEFAULT_SELECTED_SHOW_SHADOW;
 
+    private int multiplier = DEFAULT_MULTIPLIER;
+    private int startIndex = DEFAULT_STARTINDEX;
 
     private int barHeight = DEFAULT_BAR_HEIGHT;
     private int rangeCount = DEFAULT_RANGE_COUNT;
 
     private OnSlideListener listener;
-//    private float rippleRadius = 0.0f;
-//    private float downX;
-//    private float downY;
-
-    private Path innerPath = new Path();
-    private Path outerPath = new Path();
 
 
     private int layoutHeight;
@@ -124,6 +120,10 @@ public class DiscreteRangeSlideBar extends View {
                 selectedTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_seletedTextColor, DEFAULT_SELECTED_TEXTCOLOR);
                 selectedTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_seletedTextSize, DEFAULT_SELECTED_TEXTSIZE_IN_DP);
                 selectedShowShadow = a.getBoolean(R.styleable.DiscreteRangeSlideBar_seletedShowShadow, DEFAULT_SELECTED_SHOW_SHADOW);
+
+                multiplier = a.getInt(R.styleable.DiscreteRangeSlideBar_multiplier, DEFAULT_MULTIPLIER);
+                startIndex = a.getInt(R.styleable.DiscreteRangeSlideBar_startIndex, DEFAULT_STARTINDEX);
+
 
             } finally {
                 a.recycle();
@@ -381,33 +381,6 @@ public class DiscreteRangeSlideBar extends View {
         return result;
     }
 
-//    private void animateRipple() {
-//        ObjectAnimator animator = ObjectAnimator.ofFloat(this, "radius", 0, radius);
-//        animator.setInterpolator(new AccelerateInterpolator());
-//        animator.setDuration(RIPPLE_ANIMATION_DURATION_MS);
-//        animator.start();
-//        animator.addListener(new Animator.AnimatorListener() {
-//            @Override
-//            public void onAnimationStart(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animator animation) {
-//                rippleRadius = 0;
-//            }
-//
-//            @Override
-//            public void onAnimationCancel(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animator animation) {
-//
-//            }
-//        });
-//    }
 
     private void updateCurrentIndex() {
         float min = Float.MAX_VALUE;
@@ -524,7 +497,7 @@ public class DiscreteRangeSlideBar extends View {
 
             canvas.drawCircle(slotPositions[i], y, emptySlotRadius, paint);
 
-            String text = String.valueOf(i);
+            String text = String.valueOf((i+startIndex) * multiplier);
             canvas.drawText(text, slotPositions[i] + xTextPosOffset, y - yTextPosOffset, textPaint);
         }
     }
@@ -570,7 +543,7 @@ public class DiscreteRangeSlideBar extends View {
 
                 canvas.drawCircle(slotPositions[i], y, filledSlotRadius, paint);
 
-                String text = String.valueOf(i);
+                String text = String.valueOf((i+startIndex) * multiplier);
                 canvas.drawText(text, slotPositions[i] + xTextPosOffset, y - yTextPosOffset, textPaint);
             }
         }
@@ -671,7 +644,7 @@ public class DiscreteRangeSlideBar extends View {
         int yTextPosOffset = (int) ((textPaint.descent() + textPaint.ascent()) / 2); // why this will correct the layout?
 
 
-        String text = String.valueOf(currentIndex);
+        String text = String.valueOf((currentIndex+startIndex) * multiplier);
         canvas.drawText(text, currentSlidingX + xTextPosOffset, y0 - yTextPosOffset, textPaint);
 
 

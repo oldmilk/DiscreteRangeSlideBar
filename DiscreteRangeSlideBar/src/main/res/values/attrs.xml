@@ -3,6 +3,9 @@
 
     <declare-styleable name="DiscreteRangeSlideBar">
         <attr name="rangeCount" format="integer" />
+        <attr name="multiplier" format="integer" />
+        <attr name="startIndex" format="integer" />
+
         <attr name="filledSlotRadius" format="dimension" />
         <attr name="filledColor" format="color" />
         <attr name="filledTextColor" format="color" />
