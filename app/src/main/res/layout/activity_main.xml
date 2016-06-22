@@ -1,0 +1,40 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:rsv="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <psn.oldmilk.seekbar.discreterangeslidebar.DiscreteRangeSlideBar
+            android:id="@+id/rsv_another"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_weight="1"
+            rsv:barHeight="0dp"
+            rsv:emptyColor="#FFFFFF"
+            rsv:emptyTextColor="#FF0000"
+            rsv:emptyTextSize="12sp"
+            rsv:filledColor="#FFFFFF"
+            rsv:filledTextColor="#FF0000"
+            rsv:filledTextSize="12sp"
+
+            rsv:seletedColor="#FF0000"
+            rsv:seletedTextColor="#FFFFFF"
+            rsv:seletedTextSize="12sp"
+
+            rsv:rangeCount="5" />
+
+
+    </LinearLayout>
+
+</LinearLayout>
