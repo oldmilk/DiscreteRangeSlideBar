@@ -24,6 +24,7 @@ public class DiscreteRangeSlideBar extends View {
 
     private static final int DEFAULT_BAR_HEIGHT = 10;
     private static final int DEFAULT_PAINT_STROKE_WIDTH = 0;
+    private static final int DEFAULT_HEIGHT_IN_DP = 50;
 
     private static final int DEFAULT_FILLED_SLOT_RADIUS_IN_DP = 30;
     private static final int DEFAULT_FILLED_COLOR = Color.parseColor("#FFFFFF");
@@ -35,18 +36,18 @@ public class DiscreteRangeSlideBar extends View {
     private static final int DEFAULT_EMPTY_TEXTCOLOR = Color.parseColor("#000000");
     private static final int DEFAULT_EMPTY_TEXTSIZE_IN_DP = 16;
 
-    private static final int DEFAULT_SELECTED_SLIDER_RADIUS_IN_DP = 40;
+    private static final int DEFAULT_SELECTED_SLOT_RADIUS_IN_DP = 40;
     private static final int DEFAULT_SELECTED_COLOR = Color.parseColor("#FFA500");
     private static final int DEFAULT_SELECTED_TEXTCOLOR = Color.parseColor("#C3C3C3");
     private static final int DEFAULT_SELECTED_TEXTSIZE_IN_DP = 16;
     private static final boolean DEFAULT_SELECTED_SHOW_SHADOW = true;
+    private static final boolean DEFAULT_DRAW_RULER = true;
 
 
     private static final int DEFAULT_RANGE_COUNT = 5;
-    private static final int DEFAULT_HEIGHT_IN_DP = 50;
-
-    private static final int DEFAULT_MULTIPLIER = 10;
-    private static final int DEFAULT_STARTINDEX = 1;
+    private static final int DEFAULT_MULTIPLIER = 1;
+    private static final int DEFAULT_STARTINDEX = 0;
+    private static final String DEFAULT_UNIT = "";
 
 
     protected Paint paint;
@@ -68,17 +69,20 @@ public class DiscreteRangeSlideBar extends View {
     private int emptyTextColor = DEFAULT_EMPTY_TEXTCOLOR;
     private float emptyTextSize = DEFAULT_EMPTY_TEXTSIZE_IN_DP;
 
-    private int selectedSliderRadius = DEFAULT_SELECTED_SLIDER_RADIUS_IN_DP;
+    private int selectedSlotRadius = DEFAULT_SELECTED_SLOT_RADIUS_IN_DP;
     private int selectedColor = DEFAULT_SELECTED_COLOR;
     private int selectedTextColor = DEFAULT_SELECTED_TEXTCOLOR;
     private float selectedTextSize = DEFAULT_SELECTED_TEXTSIZE_IN_DP;
     private boolean selectedShowShadow = DEFAULT_SELECTED_SHOW_SHADOW;
 
+    private boolean isDrawRuler = DEFAULT_DRAW_RULER;
+
     private int multiplier = DEFAULT_MULTIPLIER;
     private int startIndex = DEFAULT_STARTINDEX;
+    private int rangeCount = DEFAULT_RANGE_COUNT;
+    private String unit = DEFAULT_UNIT;
 
     private int barHeight = DEFAULT_BAR_HEIGHT;
-    private int rangeCount = DEFAULT_RANGE_COUNT;
 
     private OnSlideListener listener;
 
@@ -115,14 +119,21 @@ public class DiscreteRangeSlideBar extends View {
                 filledTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_filledTextColor, DEFAULT_FILLED_TEXTCOLOR);
                 filledTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_filledTextSize, DEFAULT_FILLED_TEXTSIZE_IN_DP);
 
-                selectedSliderRadius = (int) a.getDimension(R.styleable.DiscreteRangeSlideBar_selectedSliderRadius, DEFAULT_SELECTED_SLIDER_RADIUS_IN_DP);
-                selectedColor = a.getColor(R.styleable.DiscreteRangeSlideBar_seletedColor, DEFAULT_SELECTED_COLOR);
-                selectedTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_seletedTextColor, DEFAULT_SELECTED_TEXTCOLOR);
-                selectedTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_seletedTextSize, DEFAULT_SELECTED_TEXTSIZE_IN_DP);
-                selectedShowShadow = a.getBoolean(R.styleable.DiscreteRangeSlideBar_seletedShowShadow, DEFAULT_SELECTED_SHOW_SHADOW);
+                selectedSlotRadius = (int) a.getDimension(R.styleable.DiscreteRangeSlideBar_selectedSlotRadius, DEFAULT_SELECTED_SLOT_RADIUS_IN_DP);
+                selectedColor = a.getColor(R.styleable.DiscreteRangeSlideBar_selectedColor, DEFAULT_SELECTED_COLOR);
+                selectedTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_selectedTextColor, DEFAULT_SELECTED_TEXTCOLOR);
+                selectedTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_selectedTextSize, DEFAULT_SELECTED_TEXTSIZE_IN_DP);
+                selectedShowShadow = a.getBoolean(R.styleable.DiscreteRangeSlideBar_selectedShowShadow, DEFAULT_SELECTED_SHOW_SHADOW);
 
                 multiplier = a.getInt(R.styleable.DiscreteRangeSlideBar_multiplier, DEFAULT_MULTIPLIER);
                 startIndex = a.getInt(R.styleable.DiscreteRangeSlideBar_startIndex, DEFAULT_STARTINDEX);
+                unit = a.getString(R.styleable.DiscreteRangeSlideBar_unit);
+
+                if(unit == null || unit.isEmpty()) {
+                    unit = DEFAULT_UNIT;
+                }
+                isDrawRuler = a.getBoolean(R.styleable.DiscreteRangeSlideBar_isDrawRuler, DEFAULT_DRAW_RULER);
+
 
 
             } finally {
@@ -134,7 +145,7 @@ public class DiscreteRangeSlideBar extends View {
         setBarHeight(barHeight);
         setRangeCount(rangeCount);
         setEmptySlotRadius(emptySlotRadius);
-        setSelectedSliderRadius(selectedSliderRadius);
+        setSelectedSliderRadius(selectedSlotRadius);
 
         slotPositions = new float[rangeCount];
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -212,7 +223,7 @@ public class DiscreteRangeSlideBar extends View {
     }
 
     public float getSelectedSliderRadius() {
-        return selectedSliderRadius;
+        return selectedSlotRadius;
     }
 
 //    @AnimateMethod
@@ -236,7 +247,7 @@ public class DiscreteRangeSlideBar extends View {
         if (radius < 0) {
             throw new IllegalArgumentException("Slot radius percent must be in (0, 1]");
         }
-        this.selectedSliderRadius = radius;
+        this.selectedSlotRadius = radius;
     }
 
     public void setOnSlideListener(OnSlideListener listener) {
@@ -373,7 +384,7 @@ public class DiscreteRangeSlideBar extends View {
         if (specMode == MeasureSpec.EXACTLY) {
             result = specSize;
         } else {
-            result = specSize + getPaddingLeft() + getPaddingRight() + (2 * DEFAULT_PAINT_STROKE_WIDTH) + (int) (2 * selectedSliderRadius);
+            result = specSize + getPaddingLeft() + getPaddingRight() + (2 * DEFAULT_PAINT_STROKE_WIDTH) + (int) (2 * selectedSlotRadius);
             if (specMode == MeasureSpec.AT_MOST) {
                 result = Math.min(result, specSize);
             }
@@ -429,7 +440,7 @@ public class DiscreteRangeSlideBar extends View {
 
                     for (int i = 0; i < rangeCount; i++) {
                         float dx = Math.abs(x - (int) slotPositions[i]);
-                        if (dx <= (selectedSliderRadius / 2)) {
+                        if (dx <= (selectedSlotRadius / 2)) {
 
                             updateCurrentIndex();
                             break;
@@ -453,14 +464,33 @@ public class DiscreteRangeSlideBar extends View {
 
     private boolean isInSelectedSlot(float x, float y) {
         return
-                selectedSlotX - selectedSliderRadius <= x && x <= selectedSlotX + selectedSliderRadius &&
-                        selectedSlotY - selectedSliderRadius <= y && y <= selectedSlotY + selectedSliderRadius;
+                selectedSlotX - selectedSlotRadius <= x && x <= selectedSlotX + selectedSlotRadius &&
+                        selectedSlotY - selectedSlotRadius <= y && y <= selectedSlotY + selectedSlotRadius;
     }
 
     public void setTypeface(Typeface typeface) {
         mTypeface = typeface;
 
 
+    }
+
+    private void drawRuler(Canvas canvas) {
+
+        float stroke = dpToPx(getContext(), 1);
+        float rulePadding = dpToPx(getContext(), 3);
+
+        Paint linePaint = new Paint();
+        linePaint.setColor(selectedColor);
+        linePaint.setAntiAlias(true);
+        linePaint.setStrokeWidth(stroke);
+
+        int h = getHeightWithPadding();
+        int y = getPaddingTop() + (h >> 1);
+        for (int i = 0; i < rangeCount; ++i) {
+
+            canvas.drawLine(slotPositions[i], y+(selectedSlotRadius+rulePadding), slotPositions[i], getHeight(), linePaint);
+
+        }
     }
 
     private void drawEmptySlots(Canvas canvas) {
@@ -497,7 +527,7 @@ public class DiscreteRangeSlideBar extends View {
 
             canvas.drawCircle(slotPositions[i], y, emptySlotRadius, paint);
 
-            String text = String.valueOf((i+startIndex) * multiplier);
+            String text = String.valueOf((i+startIndex) * multiplier)+unit;
             canvas.drawText(text, slotPositions[i] + xTextPosOffset, y - yTextPosOffset, textPaint);
         }
     }
@@ -543,7 +573,7 @@ public class DiscreteRangeSlideBar extends View {
 
                 canvas.drawCircle(slotPositions[i], y, filledSlotRadius, paint);
 
-                String text = String.valueOf((i+startIndex) * multiplier);
+                String text = String.valueOf((i+startIndex) * multiplier)+unit;
                 canvas.drawText(text, slotPositions[i] + xTextPosOffset, y - yTextPosOffset, textPaint);
             }
         }
@@ -558,21 +588,6 @@ public class DiscreteRangeSlideBar extends View {
             canvas.drawRect(from, y - half, to, y + half, paint);
         }
     }
-
-//    private void drawRippleEffect(Canvas canvas) {
-//        if (rippleRadius != 0) {
-//            canvas.save();
-//            ripplePaint.setColor(Color.GRAY);
-//            outerPath.reset();
-//            outerPath.addCircle(downX, downY, rippleRadius, Path.Direction.CW);
-//            canvas.clipPath(outerPath);
-//            innerPath.reset();
-//            innerPath.addCircle(downX, downY, rippleRadius / 3, Path.Direction.CW);
-//            canvas.clipPath(innerPath, Region.Op.DIFFERENCE);
-//            canvas.drawCircle(downX, downY, rippleRadius, ripplePaint);
-//            canvas.restore();
-//        }
-//    }
 
     @Override
     public void onDraw(Canvas canvas) {
@@ -598,8 +613,8 @@ public class DiscreteRangeSlideBar extends View {
 
             // Draw Border
             int borderWidth = 0;
-            float shadowRadius = 2.0f;
-            int shadowColor = Color.BLACK;
+            float shadowRadius = 4.0f;
+            int shadowColor = Color.parseColor("#757575");
 
             Paint paintBorder = new Paint();
             paintBorder.setAntiAlias(true);
@@ -607,16 +622,16 @@ public class DiscreteRangeSlideBar extends View {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
                 setLayerType(LAYER_TYPE_SOFTWARE, paintBorder);
             }
-            paintBorder.setShadowLayer(shadowRadius, 0.0f, shadowRadius / 2, shadowColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSliderRadius + borderWidth - (shadowRadius + shadowRadius / 2), paintBorder);
+            paintBorder.setShadowLayer(shadowRadius, 0.0f, 0.0f, shadowColor);
+            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius + borderWidth - (shadowRadius + shadowRadius / 2), paintBorder);
             // Draw CircularImageView
             paint.setColor(selectedColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSliderRadius - (shadowRadius + shadowRadius / 2), paint);
+            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius - (shadowRadius + shadowRadius / 2), paint);
 
         }else{
             /** Draw the selected range circle */
             paint.setColor(selectedColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSliderRadius, paint);
+            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius, paint);
         }
 
 
@@ -644,9 +659,14 @@ public class DiscreteRangeSlideBar extends View {
         int yTextPosOffset = (int) ((textPaint.descent() + textPaint.ascent()) / 2); // why this will correct the layout?
 
 
-        String text = String.valueOf((currentIndex+startIndex) * multiplier);
+        String text = String.valueOf((currentIndex+startIndex) * multiplier)+unit;
         canvas.drawText(text, currentSlidingX + xTextPosOffset, y0 - yTextPosOffset, textPaint);
 
+        //draw text
+        if(isDrawRuler) {
+            drawRuler(canvas);
+
+        }
 
 
     }

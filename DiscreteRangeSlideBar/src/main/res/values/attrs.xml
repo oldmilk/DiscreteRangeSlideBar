@@ -5,6 +5,7 @@
         <attr name="rangeCount" format="integer" />
         <attr name="multiplier" format="integer" />
         <attr name="startIndex" format="integer" />
+        <attr name="unit" format="string" />
 
         <attr name="filledSlotRadius" format="dimension" />
         <attr name="filledColor" format="color" />
@@ -14,11 +15,15 @@
         <attr name="emptyColor" format="color" />
         <attr name="emptyTextColor" format="color" />
         <attr name="emptyTextSize" format="dimension" />
-        <attr name="selectedSliderRadius" format="dimension" />
-        <attr name="seletedColor" format="color" />
-        <attr name="seletedTextColor" format="color" />
-        <attr name="seletedTextSize" format="dimension" />
-        <attr name="seletedShowShadow" format="boolean" />
+        <attr name="selectedSlotRadius" format="dimension" />
+        <attr name="selectedColor" format="color" />
+        <attr name="selectedTextColor" format="color" />
+        <attr name="selectedTextSize" format="dimension" />
+        <attr name="selectedShowShadow" format="boolean" />
         <attr name="barHeight" format="dimension" />
+
+        <attr name="isDrawRuler" format="boolean" />
+
+
     </declare-styleable>
 </resources>

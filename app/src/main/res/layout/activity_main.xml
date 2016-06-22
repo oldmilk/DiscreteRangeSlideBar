@@ -15,24 +15,30 @@
         <psn.oldmilk.seekbar.discreterangeslidebar.DiscreteRangeSlideBar
             android:id="@+id/rsv_another"
             android:layout_width="wrap_content"
-            android:layout_height="100dp"
+            android:layout_height="60dp"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             android:layout_weight="1"
             rsv:barHeight="0dp"
-            rsv:emptyColor="#FFFFFF"
-            rsv:emptyTextColor="#FF0000"
-            rsv:emptyTextSize="12sp"
-            rsv:filledColor="#FFFFFF"
-            rsv:filledTextColor="#FF0000"
-            rsv:filledTextSize="12sp"
+            rsv:emptyColor="#00FFFFFF"
+            rsv:emptyTextColor="#9AD000"
+            rsv:emptyTextSize="10sp"
+            rsv:emptySlotRadius="15dp"
 
-            rsv:seletedColor="#FF0000"
-            rsv:seletedTextColor="#FFFFFF"
-            rsv:seletedTextSize="12sp"
+            rsv:filledColor="#00FFFFFF"
+            rsv:filledTextColor="#9AD000"
+            rsv:filledTextSize="10sp"
+            rsv:filledSlotRadius="15dp"
 
-            rsv:rangeCount="5" />
+            rsv:selectedColor="#9AD000"
+            rsv:selectedTextColor="#FFFFFF"
+            rsv:selectedTextSize="10sp"
+            rsv:selectedSlotRadius="15dp"
+
+            rsv:multiplier="40"
+            rsv:rangeCount="5"
+            rsv:unit="%" />
 
 
     </LinearLayout>
