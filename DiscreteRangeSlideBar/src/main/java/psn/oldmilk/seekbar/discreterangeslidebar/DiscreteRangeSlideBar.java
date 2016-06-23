@@ -5,14 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +24,7 @@ public class DiscreteRangeSlideBar extends View {
     private static final int DEFAULT_HEIGHT_IN_DP = 50;
 
     private static final int DEFAULT_FILLED_SLOT_RADIUS_IN_DP = 30;
-    private static final int DEFAULT_FILLED_COLOR = Color.parseColor("#FFFFFF");
+    private static final int DEFAULT_FILLED_SLOT_COLOR = Color.parseColor("#FFFFFF");
     private static final int DEFAULT_FILLED_TEXTCOLOR = Color.parseColor("#000000");
     private static final int DEFAULT_FILLED_TEXTSIZE_IN_DP = 16;
 
@@ -37,7 +34,7 @@ public class DiscreteRangeSlideBar extends View {
     private static final int DEFAULT_EMPTY_TEXTSIZE_IN_DP = 16;
 
     private static final int DEFAULT_SELECTED_SLOT_RADIUS_IN_DP = 40;
-    private static final int DEFAULT_SELECTED_COLOR = Color.parseColor("#FFA500");
+    private static final int DEFAULT_SELECTED_SLOT_COLOR = Color.parseColor("#FFA500");
     private static final int DEFAULT_SELECTED_TEXTCOLOR = Color.parseColor("#C3C3C3");
     private static final int DEFAULT_SELECTED_TEXTSIZE_IN_DP = 16;
     private static final boolean DEFAULT_SELECTED_SHOW_SHADOW = true;
@@ -60,7 +57,7 @@ public class DiscreteRangeSlideBar extends View {
     private float[] slotPositions;
 
     private int filledSlotRadius = DEFAULT_FILLED_SLOT_RADIUS_IN_DP;
-    private int filledColor = DEFAULT_FILLED_COLOR;
+    private int filledSlotColor = DEFAULT_FILLED_SLOT_COLOR;
     private int filledTextColor = DEFAULT_FILLED_TEXTCOLOR;
     private float filledTextSize = DEFAULT_FILLED_TEXTSIZE_IN_DP;
 
@@ -70,7 +67,7 @@ public class DiscreteRangeSlideBar extends View {
     private float emptyTextSize = DEFAULT_EMPTY_TEXTSIZE_IN_DP;
 
     private int selectedSlotRadius = DEFAULT_SELECTED_SLOT_RADIUS_IN_DP;
-    private int selectedColor = DEFAULT_SELECTED_COLOR;
+    private int selectedSlotColor = DEFAULT_SELECTED_SLOT_COLOR;
     private int selectedTextColor = DEFAULT_SELECTED_TEXTCOLOR;
     private float selectedTextSize = DEFAULT_SELECTED_TEXTSIZE_IN_DP;
     private boolean selectedShowShadow = DEFAULT_SELECTED_SHOW_SHADOW;
@@ -85,7 +82,6 @@ public class DiscreteRangeSlideBar extends View {
     private int barHeight = DEFAULT_BAR_HEIGHT;
 
     private OnSlideListener listener;
-
 
     private int layoutHeight;
     private Typeface mTypeface;
@@ -115,12 +111,12 @@ public class DiscreteRangeSlideBar extends View {
                 emptyTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_emptyTextSize, DEFAULT_EMPTY_TEXTSIZE_IN_DP);
 
                 filledSlotRadius = (int) a.getDimension(R.styleable.DiscreteRangeSlideBar_filledSlotRadius, DEFAULT_FILLED_SLOT_RADIUS_IN_DP);
-                filledColor = a.getColor(R.styleable.DiscreteRangeSlideBar_filledColor, DEFAULT_FILLED_COLOR);
+                filledSlotColor = a.getColor(R.styleable.DiscreteRangeSlideBar_filledSlotColor, DEFAULT_FILLED_SLOT_COLOR);
                 filledTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_filledTextColor, DEFAULT_FILLED_TEXTCOLOR);
                 filledTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_filledTextSize, DEFAULT_FILLED_TEXTSIZE_IN_DP);
 
                 selectedSlotRadius = (int) a.getDimension(R.styleable.DiscreteRangeSlideBar_selectedSlotRadius, DEFAULT_SELECTED_SLOT_RADIUS_IN_DP);
-                selectedColor = a.getColor(R.styleable.DiscreteRangeSlideBar_selectedColor, DEFAULT_SELECTED_COLOR);
+                selectedSlotColor = a.getColor(R.styleable.DiscreteRangeSlideBar_selectedSlotColor, DEFAULT_SELECTED_SLOT_COLOR);
                 selectedTextColor = a.getColor(R.styleable.DiscreteRangeSlideBar_selectedTextColor, DEFAULT_SELECTED_TEXTCOLOR);
                 selectedTextSize = a.getDimension(R.styleable.DiscreteRangeSlideBar_selectedTextSize, DEFAULT_SELECTED_TEXTSIZE_IN_DP);
                 selectedShowShadow = a.getBoolean(R.styleable.DiscreteRangeSlideBar_selectedShowShadow, DEFAULT_SELECTED_SHOW_SHADOW);
@@ -164,7 +160,9 @@ public class DiscreteRangeSlideBar extends View {
                 return true;
             }
         });
-        currentIndex = 0;
+        currentIndex = -1;
+        currentSlidingX = -selectedSlotRadius;
+        selectedSlotX = -selectedSlotRadius;
     }
 
     /**
@@ -198,6 +196,9 @@ public class DiscreteRangeSlideBar extends View {
             throw new IllegalArgumentException("rangeCount must be >= 2");
         }
         this.rangeCount = rangeCount;
+        slotPositions = new float[this.rangeCount];
+        preComputeDrawingPosition();
+        setInitialIndex(-1);
     }
 
     public float getBarHeight() {
@@ -225,23 +226,6 @@ public class DiscreteRangeSlideBar extends View {
     public float getSelectedSliderRadius() {
         return selectedSlotRadius;
     }
-
-//    @AnimateMethod
-//    public void setRadius(final float radius) {
-//        rippleRadius = radius;
-//        if (rippleRadius > 0) {
-//            RadialGradient radialGradient = new RadialGradient(
-//                    downX,
-//                    downY,
-//                    rippleRadius * 3,
-//                    Color.TRANSPARENT,
-//                    Color.BLACK,
-//                    Shader.TileMode.MIRROR
-//            );
-//            ripplePaint.setShader(radialGradient);
-//        }
-//        invalidate();
-//    }
 
     public void setSelectedSliderRadius(int radius) {
         if (radius < 0) {
@@ -293,20 +277,27 @@ public class DiscreteRangeSlideBar extends View {
     }
 
     public void setInitialIndex(int index) {
-        if (index < 0 || index >= rangeCount) {
-            throw new IllegalArgumentException("Attempted to set index=" + index + " out of range [0," + rangeCount + "]");
+        if (index < -1 || index >= rangeCount) {
+            throw new IllegalArgumentException("Attempted to set index=" + index + " out of range [-1," + rangeCount + "]");
         }
         currentIndex = index;
-        currentSlidingX = selectedSlotX = slotPositions[currentIndex];
+        if(currentIndex == -1) {
+            currentSlidingX = -selectedSlotRadius;
+            selectedSlotX = -selectedSlotRadius;
+
+        }else{
+            currentSlidingX = selectedSlotX = slotPositions[currentIndex];
+
+        }
         invalidate();
     }
 
-    public int getFilledColor() {
-        return filledColor;
+    public int getFilledSlotColor() {
+        return filledSlotColor;
     }
 
-    public void setFilledColor(int filledColor) {
-        this.filledColor = filledColor;
+    public void setFilledSlotColor(int filledSlotColor) {
+        this.filledSlotColor = filledSlotColor;
         invalidate();
     }
 
@@ -334,6 +325,44 @@ public class DiscreteRangeSlideBar extends View {
 
     public void setEmptyTextColor(int emptyTextColor) {
         this.emptyTextColor = emptyTextColor;
+        invalidate();
+    }
+
+    public boolean getIsDrawRuler() {
+        return isDrawRuler;
+    }
+
+
+    public void setIsDrawRuler(boolean isDraw) {
+        this.isDrawRuler = isDraw;
+        invalidate();
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+        invalidate();
+    }
+
+    public int getMultiplier() {
+        return multiplier;
+    }
+
+    public void setMultiplier(int multiplier) {
+        this.multiplier = multiplier;
+        invalidate();
+    }
+
+    public int getStartIndex() {
+        return startIndex;
+    }
+
+
+    public void setStartIndex(int startIndex) {
+        this.startIndex = startIndex;
         invalidate();
     }
 
@@ -421,13 +450,16 @@ public class DiscreteRangeSlideBar extends View {
     public boolean onTouchEvent(MotionEvent event) {
         float y = event.getY();
         float x = event.getX();
-        final int action = event.getActionMasked();
-        switch (action) {
+//        final int action = event.getActionMasked();
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
 
                 if (x >= slotPositions[0] && x <= slotPositions[rangeCount - 1]) {
                     currentSlidingX = x;
                     currentSlidingY = y;
+                    if (listener != null) {
+                        listener.onSlideDown();
+                    }
                     updateCurrentIndex();
                 }
                 break;
@@ -436,6 +468,9 @@ public class DiscreteRangeSlideBar extends View {
                 if (x >= slotPositions[0] && x <= slotPositions[rangeCount - 1]) {
                     currentSlidingX = x;
                     currentSlidingY = y;
+                    if (listener != null) {
+                        listener.onSliding();
+                    }
                     invalidate();
 
                     for (int i = 0; i < rangeCount; i++) {
@@ -455,6 +490,9 @@ public class DiscreteRangeSlideBar extends View {
                     currentSlidingX = x;
                     currentSlidingY = y;
                     updateCurrentIndex();
+                    if(listener != null) {
+                        listener.onSlideUp();
+                    }
                 }
 
                 break;
@@ -470,8 +508,6 @@ public class DiscreteRangeSlideBar extends View {
 
     public void setTypeface(Typeface typeface) {
         mTypeface = typeface;
-
-
     }
 
     private void drawRuler(Canvas canvas) {
@@ -480,16 +516,14 @@ public class DiscreteRangeSlideBar extends View {
         float rulePadding = dpToPx(getContext(), 3);
 
         Paint linePaint = new Paint();
-        linePaint.setColor(selectedColor);
+        linePaint.setColor(selectedSlotColor);
         linePaint.setAntiAlias(true);
         linePaint.setStrokeWidth(stroke);
 
         int h = getHeightWithPadding();
         int y = getPaddingTop() + (h >> 1);
         for (int i = 0; i < rangeCount; ++i) {
-
             canvas.drawLine(slotPositions[i], y+(selectedSlotRadius+rulePadding), slotPositions[i], getHeight(), linePaint);
-
         }
     }
 
@@ -565,7 +599,7 @@ public class DiscreteRangeSlideBar extends View {
         int xTextPosOffset = 0;
         int yTextPosOffset = (int) ((textPaint.descent() + textPaint.ascent()) / 2); // why this will correct the layout?
 
-        paint.setColor(filledColor);
+        paint.setColor(filledSlotColor);
         int h = getHeightWithPadding();
         int y = getPaddingTop() + (h >> 1);
         for (int i = 0; i < rangeCount; ++i) {
@@ -606,66 +640,68 @@ public class DiscreteRangeSlideBar extends View {
         drawBar(canvas, (int) slotPositions[0], (int) slotPositions[rangeCount - 1], emptyColor);
 
         /** Draw filled bar */
-        drawBar(canvas, x0, (int) currentSlidingX, filledColor);
+        drawBar(canvas, x0, (int) currentSlidingX, filledSlotColor);
 
-        //        //Color.parseColor("#88757575")
-        if(selectedShowShadow) {
+        if(currentIndex >= 0) {
+            //        //Color.parseColor("#88757575")
+            if(selectedShowShadow) {
 
-            // Draw Border
-            int borderWidth = 0;
-            float shadowRadius = 4.0f;
-            int shadowColor = Color.parseColor("#757575");
+                // Draw Border
+                int borderWidth = 0;
+                float shadowRadius = 4.0f;
+                int shadowColor = Color.parseColor("#757575");
 
-            Paint paintBorder = new Paint();
-            paintBorder.setAntiAlias(true);
+                Paint paintBorder = new Paint();
+                paintBorder.setAntiAlias(true);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-                setLayerType(LAYER_TYPE_SOFTWARE, paintBorder);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    setLayerType(LAYER_TYPE_SOFTWARE, paintBorder);
+                }
+                paintBorder.setShadowLayer(shadowRadius, 0.0f, 0.0f, shadowColor);
+                canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius + borderWidth - (shadowRadius + shadowRadius / 2), paintBorder);
+                // Draw CircularImageView
+                paint.setColor(selectedSlotColor);
+                canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius - (shadowRadius + shadowRadius / 2), paint);
+
+            }else{
+                /** Draw the selected range circle */
+                paint.setColor(selectedSlotColor);
+                canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius, paint);
             }
-            paintBorder.setShadowLayer(shadowRadius, 0.0f, 0.0f, shadowColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius + borderWidth - (shadowRadius + shadowRadius / 2), paintBorder);
-            // Draw CircularImageView
-            paint.setColor(selectedColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius - (shadowRadius + shadowRadius / 2), paint);
 
-        }else{
-            /** Draw the selected range circle */
-            paint.setColor(selectedColor);
-            canvas.drawCircle(currentSlidingX, y0, selectedSlotRadius, paint);
+
+
+            Paint textPaint = new Paint();
+            textPaint.setColor(selectedTextColor);
+            textPaint.setTextSize(selectedTextSize);
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            if (mTypeface != null) {
+                final Typeface oldTypeface = textPaint.getTypeface();
+                final int oldStyle = oldTypeface != null ? oldTypeface.getStyle() : 0;
+                final int fakeStyle = oldStyle & ~mTypeface.getStyle();
+
+                if ((fakeStyle & Typeface.BOLD) != 0) {
+                    textPaint.setFakeBoldText(true);
+                }
+
+                if ((fakeStyle & Typeface.ITALIC) != 0) {
+                    textPaint.setTextSkewX(-0.25f);
+                }
+
+                textPaint.setTypeface(mTypeface);
+            }
+            int xTextPosOffset = 0;
+            int yTextPosOffset = (int) ((textPaint.descent() + textPaint.ascent()) / 2); // why this will correct the layout?
+
+
+            String text = String.valueOf((currentIndex+startIndex) * multiplier)+unit;
+            canvas.drawText(text, currentSlidingX + xTextPosOffset, y0 - yTextPosOffset, textPaint);
+
         }
-
-
-
-        Paint textPaint = new Paint();
-        textPaint.setColor(selectedTextColor);
-        textPaint.setTextSize(selectedTextSize);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        if (mTypeface != null) {
-            final Typeface oldTypeface = textPaint.getTypeface();
-            final int oldStyle = oldTypeface != null ? oldTypeface.getStyle() : 0;
-            final int fakeStyle = oldStyle & ~mTypeface.getStyle();
-
-            if ((fakeStyle & Typeface.BOLD) != 0) {
-                textPaint.setFakeBoldText(true);
-            }
-
-            if ((fakeStyle & Typeface.ITALIC) != 0) {
-                textPaint.setTextSkewX(-0.25f);
-            }
-
-            textPaint.setTypeface(mTypeface);
-        }
-        int xTextPosOffset = 0;
-        int yTextPosOffset = (int) ((textPaint.descent() + textPaint.ascent()) / 2); // why this will correct the layout?
-
-
-        String text = String.valueOf((currentIndex+startIndex) * multiplier)+unit;
-        canvas.drawText(text, currentSlidingX + xTextPosOffset, y0 - yTextPosOffset, textPaint);
 
         //draw text
         if(isDrawRuler) {
             drawRuler(canvas);
-
         }
 
 
@@ -701,6 +737,11 @@ public class DiscreteRangeSlideBar extends View {
          * @param index The index value of range count [0, rangeCount - 1]
          */
         void onSlide(int index);
+
+        void onSliding();
+        void onSlideUp();
+        void onSlideDown();
+
     }
 
     static class SavedState extends BaseSavedState {

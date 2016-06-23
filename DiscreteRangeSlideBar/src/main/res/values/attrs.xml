@@ -8,7 +8,7 @@
         <attr name="unit" format="string" />
 
         <attr name="filledSlotRadius" format="dimension" />
-        <attr name="filledColor" format="color" />
+        <attr name="filledSlotColor" format="color" />
         <attr name="filledTextColor" format="color" />
         <attr name="filledTextSize" format="dimension" />
         <attr name="emptySlotRadius" format="dimension" />
@@ -16,7 +16,7 @@
         <attr name="emptyTextColor" format="color" />
         <attr name="emptyTextSize" format="dimension" />
         <attr name="selectedSlotRadius" format="dimension" />
-        <attr name="selectedColor" format="color" />
+        <attr name="selectedSlotColor" format="color" />
         <attr name="selectedTextColor" format="color" />
         <attr name="selectedTextSize" format="dimension" />
         <attr name="selectedShowShadow" format="boolean" />

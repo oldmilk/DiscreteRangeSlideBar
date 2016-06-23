@@ -26,12 +26,12 @@
             rsv:emptyTextSize="10sp"
             rsv:emptySlotRadius="15dp"
 
-            rsv:filledColor="#00FFFFFF"
+            rsv:filledSlotColor="#00FFFFFF"
             rsv:filledTextColor="#9AD000"
             rsv:filledTextSize="10sp"
             rsv:filledSlotRadius="15dp"
 
-            rsv:selectedColor="#9AD000"
+            rsv:selectedSlotColor="#9AD000"
             rsv:selectedTextColor="#FFFFFF"
             rsv:selectedTextSize="10sp"
             rsv:selectedSlotRadius="15dp"
@@ -39,6 +39,69 @@
             rsv:multiplier="40"
             rsv:rangeCount="5"
             rsv:unit="%" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/button_drawruler"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Draw Ruler"/>
+
+            <Button
+                android:id="@+id/button_startindex"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Start Index"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/button_numberrange"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Range"/>
+
+            <Button
+                android:id="@+id/button_unit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Unit"/>
+
+            <Button
+                android:id="@+id/button_multiplier"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Multiplier"/>
+        </LinearLayout>
+
+
+
+
+
 
 
     </LinearLayout>
